@@ -15,8 +15,10 @@ import meteordevelopment.meteorclient.utils.render.RenderUtils;
 import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -70,6 +72,31 @@ public class AdvancedItemESP extends Module {
             Items.EXPERIENCE_BOTTLE,
             Items.SHULKER_BOX
     ));
+
+    // Shulker box color variants are looked up by registry ID instead of static
+    // Items.* fields. This avoids a NoSuchFieldError/class-init crash if a future
+    // Minecraft version renames or removes any of these constants - a missing
+    // entry is just skipped instead of crashing the whole module.
+    private static final String[] SHULKER_BOX_COLOR_IDS = {
+            "red_shulker_box", "orange_shulker_box", "yellow_shulker_box",
+            "lime_shulker_box", "green_shulker_box", "cyan_shulker_box",
+            "light_blue_shulker_box", "blue_shulker_box", "purple_shulker_box",
+            "magenta_shulker_box", "pink_shulker_box", "white_shulker_box",
+            "light_gray_shulker_box", "gray_shulker_box", "brown_shulker_box",
+            "black_shulker_box"
+    };
+
+    private static Item lookupItem(String path) {
+        ResourceLocation id = ResourceLocation.withDefaultNamespace(path);
+        return BuiltInRegistries.ITEM.getOptional(id).orElse(null);
+    }
+
+    {
+        for (String path : SHULKER_BOX_COLOR_IDS) {
+            Item item = lookupItem(path);
+            if (item != null) defaultPlayerItems.add(item);
+        }
+    }
 
     public AdvancedItemESP() {
         super(Trouser.baseHunting, "AdvancedItemESP", "ESP Module that highlights only certain items.");
